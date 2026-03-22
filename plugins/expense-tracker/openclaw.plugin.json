@@ -1,0 +1,49 @@
+{
+  "id": "expense-tracker",
+  "kind": "provider",
+  "name": "Denkeeper Expense Tracker",
+  "description": "Expense tracking tools for Kyoto via a Denkeeper worker service.",
+  "version": "0.1.0",
+  "skills": [
+    "./skills"
+  ],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "workerBaseUrl": {
+        "type": "string",
+        "default": "http://127.0.0.1:8765"
+      },
+      "apiToken": {
+        "type": "string"
+      },
+      "defaultScope": {
+        "type": "string",
+        "default": "the-den"
+      },
+      "requestTimeoutMs": {
+        "type": "integer",
+        "minimum": 1000,
+        "default": 5000
+      }
+    }
+  },
+  "uiHints": {
+    "workerBaseUrl": {
+      "label": "Worker Base URL",
+      "placeholder": "http://127.0.0.1:8765"
+    },
+    "apiToken": {
+      "label": "Worker API Token",
+      "sensitive": true
+    },
+    "defaultScope": {
+      "label": "Default Scope",
+      "placeholder": "the-den"
+    },
+    "requestTimeoutMs": {
+      "label": "Request Timeout (ms)"
+    }
+  }
+}

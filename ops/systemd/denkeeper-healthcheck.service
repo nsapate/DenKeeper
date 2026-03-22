@@ -1,0 +1,10 @@
+[Unit]
+Description=Denkeeper Stack Healthcheck
+After=denkeeper-compose.service
+Wants=denkeeper-compose.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=__PROJECT_ROOT__/ops/docker
+EnvironmentFile=-__PROJECT_ROOT__/ops/docker/.env
+ExecStart=__PROJECT_ROOT__/ops/docker/healthcheck.sh

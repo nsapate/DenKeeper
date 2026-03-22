@@ -1,0 +1,25 @@
+[project]
+name = "denkeeper-expense-worker"
+version = "0.1.0"
+description = "SQLite-backed expense worker for Denkeeper"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.12,<1.0.0",
+  "uvicorn[standard]>=0.34.0,<1.0.0",
+  "pydantic>=2.11.0,<3.0.0"
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+

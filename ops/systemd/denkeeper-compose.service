@@ -1,0 +1,16 @@
+[Unit]
+Description=Denkeeper Compose Stack (OpenClaw + Expense Worker)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=__PROJECT_ROOT__/ops/docker
+ExecStart=/usr/bin/docker compose --env-file __PROJECT_ROOT__/ops/docker/.env up -d --build
+ExecStop=/usr/bin/docker compose --env-file __PROJECT_ROOT__/ops/docker/.env down
+ExecReload=/usr/bin/docker compose --env-file __PROJECT_ROOT__/ops/docker/.env up -d --build
+TimeoutStartSec=0
+
+[Install]
+WantedBy=default.target

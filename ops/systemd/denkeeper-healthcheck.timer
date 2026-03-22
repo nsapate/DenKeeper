@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Denkeeper healthcheck every 5 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Unit=denkeeper-healthcheck.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

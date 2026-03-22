@@ -1,0 +1,52 @@
+{
+  "ui": {
+    "assistant": {
+      "name": "Kyoto"
+    }
+  },
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "gateway": {
+    "mode": "local",
+    "bind": "lan",
+    "auth": {
+      "mode": "token",
+      "token": "replace-me"
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "enabled": true,
+      "dmPolicy": "disabled",
+      "groupPolicy": "allowlist",
+      "groupAllowFrom": [],
+      "groups": {}
+    }
+  },
+  "plugins": {
+    "allow": [
+      "expense-tracker",
+      "whatsapp"
+    ],
+    "load": {
+      "paths": [
+        "/opt/denkeeper/plugins/expense-tracker"
+      ]
+    },
+    "entries": {
+      "expense-tracker": {
+        "enabled": true,
+        "config": {
+          "workerBaseUrl": "http://denkeeper-expense-worker:8765",
+          "apiToken": "replace-me",
+          "defaultScope": "the-den",
+          "requestTimeoutMs": 5000
+        }
+      },
+      "whatsapp": {
+        "enabled": true
+      }
+    }
+  }
+}

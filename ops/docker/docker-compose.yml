@@ -1,0 +1,77 @@
+services:
+  denkeeper-expense-worker:
+    build:
+      context: ../../workers/expense-worker
+    container_name: denkeeper-expense-worker
+    environment:
+      DENKEEPER_EXPENSE_DB_PATH: /app/data/expenses.sqlite3
+      DENKEEPER_EXPENSE_API_TOKEN: ${DENKEEPER_WORKER_TOKEN:?Set DENKEEPER_WORKER_TOKEN in ops/docker/.env}
+      DENKEEPER_EXPENSE_REQUIRE_API_TOKEN: ${DENKEEPER_EXPENSE_REQUIRE_API_TOKEN:-true}
+      DENKEEPER_EXPENSE_TIMEZONE: ${DENKEEPER_EXPENSE_TIMEZONE:-America/Los_Angeles}
+      DENKEEPER_EXPENSE_ALLOWED_SCOPES: ${DENKEEPER_EXPENSE_ALLOWED_SCOPES:-the-den}
+    volumes:
+      - ../../data:/app/data
+    ports:
+      - "127.0.0.1:${DENKEEPER_WORKER_HOST_PORT:-8765}:8765"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/health', timeout=2)",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 8
+      start_period: 5s
+    restart: unless-stopped
+
+  denkeeper-openclaw:
+    build:
+      context: ../../
+      dockerfile: ops/docker/openclaw/Dockerfile
+    container_name: denkeeper-openclaw
+    depends_on:
+      denkeeper-expense-worker:
+        condition: service_healthy
+    environment:
+      OPENCLAW_STATE_DIR: /openclaw/state
+      OPENCLAW_CONFIG_PATH: /openclaw/state/openclaw.json
+      OPENCLAW_GATEWAY_PORT: 1455
+      OPENCLAW_BOOTSTRAP_DIR: /opt/denkeeper/bootstrap
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:?Set OPENCLAW_GATEWAY_TOKEN in ops/docker/.env}
+      DENKEEPER_WORKER_TOKEN: ${DENKEEPER_WORKER_TOKEN:?Set DENKEEPER_WORKER_TOKEN in ops/docker/.env}
+      DENKEEPER_WORKER_BASE_URL: http://denkeeper-expense-worker:8765
+      DENKEEPER_DEFAULT_SCOPE: ${DENKEEPER_DEFAULT_SCOPE:-the-den}
+      DENKEEPER_REQUEST_TIMEOUT_MS: ${DENKEEPER_REQUEST_TIMEOUT_MS:-5000}
+      OPENCLAW_ASSISTANT_NAME: ${OPENCLAW_ASSISTANT_NAME:-Kyoto}
+      OPENCLAW_WHATSAPP_ENABLED: ${OPENCLAW_WHATSAPP_ENABLED:-true}
+      OPENCLAW_WHATSAPP_DM_POLICY: ${OPENCLAW_WHATSAPP_DM_POLICY:-disabled}
+      OPENCLAW_WHATSAPP_GROUP_POLICY: ${OPENCLAW_WHATSAPP_GROUP_POLICY:-allowlist}
+      OPENCLAW_WHATSAPP_GROUP_ALLOW_FROM_JSON: ${OPENCLAW_WHATSAPP_GROUP_ALLOW_FROM_JSON:-[]}
+      OPENCLAW_GROUP_MENTION_PATTERNS_JSON: ${OPENCLAW_GROUP_MENTION_PATTERNS_JSON:-[]}
+      OPENCLAW_WHATSAPP_GROUPS_JSON: ${OPENCLAW_WHATSAPP_GROUPS_JSON:-{}}
+      OPENCLAW_PRIMARY_MODEL: ${OPENCLAW_PRIMARY_MODEL:-openai-codex/gpt-5.4}
+    volumes:
+      - openclaw_state:/openclaw/state
+      - ${OPENCLAW_BOOTSTRAP_HOST_DIR:-../../.denkeeper-bootstrap}:/opt/denkeeper/bootstrap:ro
+    ports:
+      - "127.0.0.1:${OPENCLAW_GATEWAY_PORT:-1455}:1455"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "const s=require('net').createConnection({host:'127.0.0.1',port:1455},()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1));setTimeout(()=>process.exit(1),2000);",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  openclaw_state:
+    name: denkeeper_openclaw_state
