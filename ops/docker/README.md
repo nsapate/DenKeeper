@@ -79,11 +79,40 @@ The script validates:
 - both containers exist and are healthy/running
 - worker HTTP health endpoint
 - gateway TCP reachability on configured host port
+- recent OpenClaw model-auth errors (token refresh failures) in container logs
 
 Optional alert hook:
 
 - set `DENKEEPER_ALERT_WEBHOOK_URL` in `.env`
 - on failure, `healthcheck.sh` sends a JSON POST alert payload
+
+Auth hardening envs:
+
+- `DENKEEPER_ENFORCE_MODEL_AUTH_HEALTH=true`
+- `DENKEEPER_AUTH_ERROR_LOOKBACK_MINUTES=15`
+- optional `DENKEEPER_MODEL_AUTH_ERROR_PATTERNS=...`
+
+## OAuth Recovery (openai-codex)
+
+If Kyoto replies with an OAuth refresh failure, run:
+
+```bash
+cd /home/ninadsapate21/workspace/projects/denkeeper/ops/docker
+./recover-openclaw-auth.sh
+```
+
+This script:
+
+- runs interactive `openclaw models auth login` inside `denkeeper-openclaw`
+- syncs fresh `auth-profiles.json` back to bootstrap
+- restarts OpenClaw
+- runs `healthcheck.sh`
+
+Manual sync only (without login):
+
+```bash
+./sync-openclaw-auth-bootstrap.sh
+```
 
 ## 5. Stop
 
